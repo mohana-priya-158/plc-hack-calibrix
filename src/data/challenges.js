@@ -1,0 +1,68 @@
+const t = (name, input, expected) => ({ name, input, expected });
+
+export const challenges = [
+  {
+    id: 'c1', title: 'Conveyor Belt Start/Stop Control', difficulty: 'Beginner', time: '15 min',
+    description: 'Start and stop a conveyor motor with push buttons, with an emergency-stop override.',
+    inputs: ['I0.0 START', 'I0.1 STOP', 'I0.2 EMERGENCY_STOP'], outputs: ['Q0.0 CONVEYOR_MOTOR'],
+    problem: 'Design a seal-in (latching) circuit that runs a conveyor motor. A momentary START press starts the motor and it keeps running after release. STOP or EMERGENCY_STOP must drop it out.',
+    rules: ['START latches the motor ON.', 'STOP switches the motor OFF.', 'EMERGENCY_STOP forces the motor OFF and blocks starting.', 'After E-STOP is cleared, a new START is required to restart.'],
+    sampleTests: [t('Start', 'START=1', 'Motor ON'), t('Unsafe start', 'E-STOP=1, START=1', 'Motor OFF')],
+  },
+  {
+    id: 'c2', title: 'Motor Interlocking System', difficulty: 'Intermediate', time: '20 min',
+    description: 'Two motors that must never run at the same time.',
+    inputs: ['I0.0 START_M1', 'I0.1 START_M2', 'I0.2 STOP'], outputs: ['Q0.0 MOTOR_1', 'Q0.1 MOTOR_2'],
+    problem: 'Create latching circuits for two motors with a mutual interlock so that starting one motor is ignored while the other is running.',
+    rules: ['Each motor latches on its own START.', 'A motor cannot start while the other runs.', 'STOP drops both motors.'],
+    sampleTests: [t('M1 running, press START_M2', 'M1=ON, START_M2=1', 'M2 stays OFF'), t('Stop', 'STOP=1', 'Both OFF')],
+  },
+  {
+    id: 'c3', title: 'Water Tank Level Control', difficulty: 'Intermediate', time: '25 min',
+    description: 'Fill a tank automatically between a low and a high level sensor.',
+    inputs: ['I0.5 LEVEL_LOW', 'I0.6 LEVEL_HIGH'], outputs: ['Q0.1 PUMP_MOTOR'],
+    problem: 'Run the pump when the tank level falls to the low sensor and keep it running until the high sensor is reached.',
+    rules: ['Low-level sensor starts the pump.', 'Pump keeps running until the high-level sensor is active.', 'High level always has priority over low level.'],
+    sampleTests: [t('Low level', 'LOW=1, HIGH=0', 'Pump ON'), t('High level', 'HIGH=1', 'Pump OFF')],
+  },
+  {
+    id: 'c4', title: 'Automatic Traffic Light Controller', difficulty: 'Advanced', time: '35 min',
+    description: 'Cycle red, green and yellow lamps using chained timers.',
+    inputs: ['I0.0 ENABLE'], outputs: ['Q0.0 RED', 'Q0.1 YELLOW', 'Q0.2 GREEN'],
+    problem: 'Build a repeating traffic-light sequence using TON timers: RED 6 s, GREEN 5 s, YELLOW 2 s while ENABLE is on.',
+    rules: ['Only one lamp is ON at a time.', 'Sequence repeats while ENABLE is active.', 'All lamps are OFF when ENABLE is off.'],
+    sampleTests: [t('t = 1 s', 'ENABLE=1', 'RED ON'), t('t = 7 s', 'ENABLE=1', 'GREEN ON')],
+  },
+  {
+    id: 'c5', title: 'Industrial Alarm System', difficulty: 'Beginner', time: '20 min',
+    description: 'Latch a red lamp and buzzer on a fault until it is acknowledged.',
+    inputs: ['I0.7 FAULT', 'I0.1 ACKNOWLEDGE'], outputs: ['Q0.3 RED_LAMP', 'Q0.4 BUZZER'],
+    problem: 'When FAULT is detected, latch the alarm lamp and buzzer. ACKNOWLEDGE silences the buzzer; the lamp stays on until the fault clears.',
+    rules: ['Fault latches lamp and buzzer.', 'Acknowledge silences buzzer only.', 'Lamp resets once fault is gone and acknowledged.'],
+    sampleTests: [t('Fault', 'FAULT=1', 'Lamp ON, Buzzer ON'), t('Acknowledge', 'FAULT=1, ACK=1', 'Buzzer OFF')],
+  },
+  {
+    id: 'c6', title: 'Object Counting Using a Sensor', difficulty: 'Intermediate', time: '25 min',
+    description: 'Count parts on a belt and signal when a batch is complete.',
+    inputs: ['I0.4 OBJECT_SENSOR', 'I0.1 RESET'], outputs: ['Q0.2 BATCH_COMPLETE'],
+    problem: 'Use a CTU counter with a preset of 10. Each object detection increments the count. BATCH_COMPLETE turns on at the preset; RESET clears it.',
+    rules: ['Count rising edges only.', 'Output ON when count reaches 10.', 'RESET clears the counter and output.'],
+    sampleTests: [t('10 objects', '10 pulses', 'Batch ON'), t('Reset', 'RESET=1', 'Batch OFF')],
+  },
+  {
+    id: 'c7', title: 'Timer-Based Motor Control', difficulty: 'Beginner', time: '20 min',
+    description: 'Start a motor after a delay using an on-delay timer.',
+    inputs: ['I0.0 START', 'I0.1 STOP'], outputs: ['Q0.0 MOTOR'],
+    problem: 'After START is pressed, wait 5 seconds (TON) before starting the motor. STOP cancels the sequence immediately.',
+    rules: ['Motor starts 5 s after START.', 'STOP resets timer and motor.', 'Motor stays on after the delay until STOP.'],
+    sampleTests: [t('2 s after START', 'START=1', 'Motor OFF'), t('6 s after START', 'START=1', 'Motor ON')],
+  },
+  {
+    id: 'c8', title: 'Emergency Stop Simulation', difficulty: 'Advanced', time: '30 min',
+    description: 'Safety circuit with fault latching and controlled reset.',
+    inputs: ['I0.0 START', 'I0.1 RESET', 'I0.2 EMERGENCY_STOP'], outputs: ['Q0.0 MOTOR', 'Q0.3 ALARM_LAMP'],
+    problem: 'An E-STOP press latches a safety fault: motor off, alarm lamp on. The fault only clears when E-STOP is released AND RESET is pressed.',
+    rules: ['E-STOP latches fault.', 'Motor cannot run during fault.', 'RESET only works with E-STOP released.'],
+    sampleTests: [t('E-STOP', 'E-STOP=1', 'Motor OFF, Alarm ON'), t('Release without reset', 'E-STOP=0', 'Alarm still ON')],
+  },
+];
